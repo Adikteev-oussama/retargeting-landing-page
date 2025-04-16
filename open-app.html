@@ -21,7 +21,7 @@
         deepLink = "intent://home#Intent;scheme=myapp;package=com.retargeting.app;end";
       } else if (/iphone|ipad|ipod/i.test(userAgent)) {
         // iOS → use URI scheme
-        deepLink = "myapp://home";
+        deepLink = "myapp://open";
       } else {
         // Not a mobile device, redirect based on platform
         window.location.href = userAgent.includes('Android') ? fallbackUrlAndroid : fallbackUrlIOS;
