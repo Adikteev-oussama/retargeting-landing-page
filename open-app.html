@@ -28,6 +28,19 @@
       }
     }
 
+    // Try to open the app using an iframe
+    function tryOpenApp(deepLinkURL) {
+      const iframe = document.createElement('iframe');
+      iframe.style.display = 'none';
+      iframe.src = deepLinkURL;
+      document.body.appendChild(iframe);
+
+      // Remove the iframe after a short delay
+      setTimeout(() => {
+        document.body.removeChild(iframe);
+      }, 1000);
+    }
+
     // Main logic to handle deep linking and fallback
     function handleDeepLinking() {
       const platform = getPlatform();
@@ -43,10 +56,10 @@
       const firebaseIOSLink = 'https://appdistribution.firebase.google.com/testerapps/ios:com.adikteev.retargeting.distribution/install';
 
       if (platform === 'android' || platform === 'ios') {
-        // Try to open the app
-        window.location.href = deepLinkURL;
+        // Attempt to open the app
+        tryOpenApp(deepLinkURL);
 
-        // If the app isn't installed, redirect to the Firebase App Distribution link after a timeout
+        // If the app isn't installed, redirect to Firebase App Distribution after a timeout
         setTimeout(() => {
           if (platform === 'android') {
             window.location.href = firebaseAndroidLink;
