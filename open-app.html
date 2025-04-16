@@ -1,50 +1,52 @@
 <!DOCTYPE html>
-<html>
-  <head>
-    <title>Opening App...</title>
-    <script>
-      function getQueryParam(param) {
-        const urlParams = new URLSearchParams(window.location.search);
-        return urlParams.get(param);
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Open App</title>
+  <script>
+    function openApp() {
+      const now = Date.now();
+      const timeout = 2000;
+
+      const userAgent = navigator.userAgent || navigator.vendor || window.opera;
+
+      // Correct Firebase App Distribution URLs for both Android and iOS
+      const fallbackUrlAndroid = "https://appdistribution.firebase.google.com/testerapps/android:com.retargeting.app/install";
+      const fallbackUrlIOS = "https://appdistribution.firebase.google.com/testerapps/ios:com.adikteev.retargeting.distribution/install";
+
+      let deepLink;
+
+      if (/android/i.test(userAgent)) {
+        // Android → use intent link
+        deepLink = "intent://home#Intent;scheme=myapp;package=com.retargeting.app;end";
+      } else if (/iphone|ipad|ipod/i.test(userAgent)) {
+        // iOS → use URI scheme
+        deepLink = "myapp://home";
+      } else {
+        // Not a mobile device, redirect based on platform
+        window.location.href = userAgent.includes('Android') ? fallbackUrlAndroid : fallbackUrlIOS;
+        return;
       }
 
-      function openApp() {
-        const queryParams = getQueryParams();
-        const userId = queryParams.userId || 'defaultUser';
-        const token = queryParams.token || 'defaultToken';
+      // Attempt to open the app
+      window.location.href = deepLink;
 
-
-        const isAndroid = /Android/i.test(navigator.userAgent);
-        const isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent);
-
-        const deepLink = `myapp://open?userId=${userId}&token=${token}`;
-
-        if (isAndroid) {
-          // Try to open the app
-          window.location.href = deepLink;
-
-          // Fallback to App Distribution after a short delay
-          setTimeout(() => {
-            window.location.href = "https://appdistribution.firebase.google.com/testerapps/android:com.retargeting.app/install";
-          }, 2000);
-        } else if (isIOS) {
-          // Use hidden iframe to try opening app
-          const iframe = document.createElement("iframe");
-          iframe.style.display = "none";
-          iframe.src = deepLink;
-          document.body.appendChild(iframe);
-
-          // Fallback to iOS Firebase App Distribution link
-          setTimeout(() => {
-            window.location.href = "https://appdistribution.firebase.google.com/testerapps/ios:com.adikteev.retargeting.distribution/install";
-          }, 2000);
-        } else {
-          document.body.innerHTML = "Unsupported device.";
+      // Fallback if app doesn't open
+      setTimeout(() => {
+        const elapsed = Date.now() - now;
+        if (elapsed < timeout + 500) {
+          // Redirect to the appropriate Firebase App Distribution page based on platform
+          if (/android/i.test(userAgent)) {
+            window.location.href = fallbackUrlAndroid;
+          } else if (/iphone|ipad|ipod/i.test(userAgent)) {
+            window.location.href = fallbackUrlIOS;
+          }
         }
-      }
-    </script>
-  </head>
-  <body onload="openApp()">
-    <p>Opening the app...</p>
-  </body>
+      }, timeout);
+    }
+  </script>
+</head>
+<body onload="openApp()">
+  <p>Opening the app V1…</p>
+</body>
 </html>
