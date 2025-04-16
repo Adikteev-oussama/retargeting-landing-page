@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Open App</title>
+  <script>
+    // Helper function to parse query parameters from the URL
+    function getQueryParams() {
+      const params = {};
+      const queryString = window.location.search.slice(1); // Remove the '?' at the start
+      queryString.split('&').forEach(param => {
+        const [key, value] = param.split('=');
+        params[decodeURIComponent(key)] = decodeURIComponent(value || '');
+      });
+      return params;
+    }
+
+    // Detect platform (Android or iOS)
+    function getPlatform() {
+      const userAgent = navigator.userAgent || navigator.vendor || window.opera;
+      if (/android/i.test(userAgent)) {
+        return 'android';
+      } else if (/iPad|iPhone|iPod/.test(userAgent) && !window.MSStream) {
+        return 'ios';
+      } else {
+        return 'other';
+      }
+    }
+
+    // Main logic to handle deep linking and fallback
+    function handleDeepLinking() {
+      const platform = getPlatform();
+      const queryParams = getQueryParams();
+      const userId = queryParams.userId || 'defaultUser';
+      const token = queryParams.token || 'defaultToken';
+
+      // Deep link URL
+      const deepLinkURL = `myapp://open?userId=${encodeURIComponent(userId)}&token=${encodeURIComponent(token)}`;
+
+      // Firebase App Distribution links
+      const firebaseAndroidLink = 'https://appdistribution.firebase.google.com/testerapps/android:com.retargeting.app/install';
+      const firebaseIOSLink = 'https://appdistribution.firebase.google.com/testerapps/ios:com.adikteev.retargeting.distribution/install';
+
+      if (platform === 'android' || platform === 'ios') {
+        // Try to open the app
+        window.location.href = deepLinkURL;
+
+        // If the app isn't installed, redirect to the Firebase App Distribution link after a timeout
+        setTimeout(() => {
+          if (platform === 'android') {
+            window.location.href = firebaseAndroidLink;
+          } else if (platform === 'ios') {
+            window.location.href = firebaseIOSLink;
+          }
+        }, 1500); // Adjust timeout as needed
+      } else {
+        alert('Unsupported platform. Please open this page on an Android or iOS device.');
+      }
+    }
+
+    // Run the deep-link handling logic when the page loads
+    window.onload = handleDeepLinking;
+  </script>
+</head>
+<body>
+  <h1>Opening App...</h1>
+  <p>If your app doesn't open automatically, you will be redirected shortly.</p>
+</body>
+</html>
